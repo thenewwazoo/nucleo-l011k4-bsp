@@ -1,5 +1,5 @@
 [target.thumbv6m-none-eabi]
-runner = 'arm-none-eabi-gdb-py'
+runner = 'arm-none-eabi-gdb'
 rustflags = [
   "-C", "link-arg=--print-memory-usage",
   "-C", "link-arg=-Map=memory.map",
