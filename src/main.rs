@@ -11,18 +11,18 @@ extern crate nucleo_l011k4_bsp as bsp;
 extern crate panic_halt;
 extern crate stm32l0x1;
 extern crate stm32l0x1_hal as hal;
+extern crate flash_embedded_hal as fhal;
 
 use cortex_m::asm;
-use cortex_m::peripheral::syst::SystClkSource;
 use embedded_hal::digital::StatefulOutputPin;
 use embedded_hal::prelude::*;
-use hal::gpio::PullDown;
 use hal::time::Hertz;
 use rt::ExceptionFrame;
+use fhal::flash::{WriteErase, Locking};
 
 #[entry]
 fn main() -> ! {
-    let mut p = cortex_m::Peripherals::take().unwrap();
+    let _p = cortex_m::Peripherals::take().unwrap();
     let d = hal::stm32l0x1::Peripherals::take().unwrap();
 
     let mut board = bsp::init::<hal::power::VCoreRange1>(d.PWR, d.FLASH, d.RCC);
@@ -36,6 +36,11 @@ fn main() -> ! {
 
     let mut timer = hal::timer::Timer::tim2(d.TIM2, board.rcc.cfgr.context().unwrap(), Hertz(1), &mut board.rcc.apb1);
 
+    let (mut vcp_tx, mut vcp_rx) = board
+        .vcp_usart(d.USART2, pins.a7, hal::rcc::clocking::USARTClkSource::SYSCLK)
+        .split();
+
+    let mut i = 0;
     loop {
         timer.start(Hertz(1));
         block!(timer.wait()).unwrap();
@@ -44,6 +49,25 @@ fn main() -> ! {
         } else {
             user_led.set_high();
         }
+
+        board.flash.unlock();
+        board.flash.erase_page(0x3000 as usize).unwrap();
+        unsafe {
+            if *(0x3000 as *const u32) != 0 {
+                asm::bkpt();
+            }
+        }
+        board.flash.program_word(0x3000 as usize, i).unwrap();
+        unsafe {
+            if *(0x3000 as *const u32) != i {
+                asm::bkpt();
+            }
+        }
+        board.flash.lock();
+
+        block!(vcp_tx.write(block!(vcp_rx.read()).unwrap())).unwrap();
+
+        i += 1;
     }
 }
 

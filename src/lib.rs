@@ -13,7 +13,7 @@
 
 extern crate cortex_m;
 extern crate stm32l0x1;
-extern crate stm32l0x1_hal as hal;
+pub extern crate stm32l0x1_hal as hal;
 
 use cortex_m::peripheral::syst::SystClkSource;
 use hal::common::Constrain;
@@ -99,21 +99,7 @@ where
     let pwr: Power<VddHigh, VCoreRange2, RtcDis> = pwr.constrain();
     let mut pwr = pwr.into_vcore_range::<VCORE>();
     let mut flash = flash.constrain();
-    let mut rcc = rcc.constrain();
-
-    {
-        let cfgr = rcc.cfgr.config().unwrap();
-
-        cfgr.msi.enable();
-        cfgr.msi.set_freq(clocking::MsiFreq::Hz_2_097_000);
-        cfgr.hsi16.enable();
-        cfgr.hclk_fclk = Hertz(2_097_000);
-        cfgr.pclk1 = Hertz(2_097_000);
-        cfgr.pclk2 = Hertz(2_097_000);
-        cfgr.sysclk_src = clocking::SysClkSource::MSI;
-    }
-
-    rcc.freeze(&mut flash, &mut pwr);
+    let mut rcc = hal::rcc::as_default(rcc);
 
     Board { pwr, flash, rcc }
 }
