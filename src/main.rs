@@ -7,18 +7,17 @@ extern crate cortex_m;
 #[macro_use]
 extern crate cortex_m_rt as rt;
 extern crate embedded_hal;
+extern crate flash_embedded_hal as fhal;
 extern crate nucleo_l011k4_bsp as bsp;
 extern crate panic_halt;
-extern crate stm32l0x1;
 extern crate stm32l0x1_hal as hal;
-extern crate flash_embedded_hal as fhal;
 
 use cortex_m::asm;
 use embedded_hal::digital::StatefulOutputPin;
 use embedded_hal::prelude::*;
+use fhal::flash::{Locking, WriteErase};
 use hal::time::Hertz;
 use rt::ExceptionFrame;
-use fhal::flash::{WriteErase, Locking};
 
 #[entry]
 fn main() -> ! {
@@ -34,20 +33,29 @@ fn main() -> ! {
 
     let mut user_led = board.user_led(pins.d13);
 
-    let mut timer = hal::timer::Timer::tim2(d.TIM2, board.rcc.cfgr.context().unwrap(), Hertz(1), &mut board.rcc.apb1);
+    let mut timer = hal::timer::Timer::tim2(
+        d.TIM2,
+        board.rcc.cfgr.context().unwrap(),
+        Hertz(1),
+        &mut board.rcc.apb1,
+    );
 
     let (mut vcp_tx, mut vcp_rx) = board
-        .vcp_usart(d.USART2, pins.a7, hal::rcc::clocking::USARTClkSource::SYSCLK)
+        .vcp_usart(
+            d.USART2,
+            pins.a7,
+            hal::rcc::clocking::USARTClkSource::SYSCLK,
+        )
         .split();
 
     let mut i = 0;
     loop {
-        timer.start(Hertz(1));
-        block!(timer.wait()).unwrap();
-        if user_led.is_set_high() {
-            user_led.set_low();
+        timer.try_start(Hertz(1)).unwrap();
+        block!(timer.try_wait()).unwrap();
+        if user_led.try_is_set_high().unwrap() {
+            user_led.try_set_low().unwrap();
         } else {
-            user_led.set_high();
+            user_led.try_set_high().unwrap();
         }
 
         board.flash.unlock();
@@ -65,7 +73,7 @@ fn main() -> ! {
         }
         board.flash.lock();
 
-        block!(vcp_tx.write(block!(vcp_rx.read()).unwrap())).unwrap();
+        //block!(vcp_tx.try_write(block!(vcp_rx.try_read()).unwrap())).unwrap();
 
         i += 1;
     }

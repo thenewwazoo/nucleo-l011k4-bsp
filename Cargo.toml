@@ -7,22 +7,23 @@ license = "0BSD"
 name = "nucleo-l011k4-bsp"
 repository = "https://github.com/thenewwazoo/nucleo-l011k4-bsp/"
 version = "0.1.1"
+edition = "2018"
 
 [dependencies]
-cortex-m = "0.5.7"
-cortex-m-rt = "0.6.4"
-nb = "0.1.1"
+cortex-m = "0.6.3"
+cortex-m-rt = "0.6.12"
+nb = "1.0"
 panic-halt = "0.2.0"
-stm32l0x1 = "0.13"
 flash-embedded-hal = "0"
+embedded-hal = "1.0.0-alpha.1"
 
-[dependencies.embedded-hal]
-features = ["unproven"]
-version = "0.2"
+[dependencies.stm32l0]
+version = "0.11.0"
+features = ["stm32l0x1", "rt"]
 
 [dependencies.stm32l0x1-hal]
 features = ["STM32L011x4", "rt"]
-version = "0.7"
+version = "0.9"
 
 [profile]
 
@@ -34,4 +35,4 @@ lto = false
 opt-level = "s"
 
 [patch.crates-io.stm32l0x1-hal]
-path = "/Users/bmatt/Development/rust/stm32l0x1-hal/"
+path = "/Users/bmatt/Development/whyz/stm32l0x1-hal/"

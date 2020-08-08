@@ -12,7 +12,6 @@
 #![allow(unused_imports)]
 
 extern crate cortex_m;
-extern crate stm32l0x1;
 pub extern crate stm32l0x1_hal as hal;
 
 use cortex_m::peripheral::syst::SystClkSource;
@@ -25,7 +24,9 @@ use hal::rcc::clocking::*;
 use hal::rcc::{self, *};
 use hal::serial::{self, *};
 use hal::time::{self, *};
-use stm32l0x1::*;
+
+use stm32l0::stm32l0x1;
+use stm32l0::stm32l0x1::*;
 
 /// A configured user LED
 pub type Led = gpio::PB3<Output<PushPull, Floating>>;
@@ -97,9 +98,9 @@ where
     VCORE: Vos + FreqLimit + Latency,
 {
     let pwr: Power<VddHigh, VCoreRange2, RtcDis> = pwr.constrain();
-    let mut pwr = pwr.into_vcore_range::<VCORE>();
-    let mut flash = flash.constrain();
-    let mut rcc = hal::rcc::as_default(rcc);
+    let pwr = pwr.into_vcore_range::<VCORE>();
+    let flash = flash.constrain();
+    let rcc = hal::rcc::as_default(rcc);
 
     Board { pwr, flash, rcc }
 }
