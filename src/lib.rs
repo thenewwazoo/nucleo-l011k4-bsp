@@ -11,8 +11,7 @@
 #![no_std]
 #![allow(unused_imports)]
 
-extern crate cortex_m;
-pub extern crate stm32l0x1_hal as hal;
+pub use stm32l0x1_hal as hal;
 
 use cortex_m::peripheral::syst::SystClkSource;
 use hal::common::Constrain;
