@@ -1,23 +1,18 @@
 #![no_std]
 #![no_main]
 
-#[macro_use]
-extern crate nb;
-extern crate cortex_m;
-#[macro_use]
-extern crate cortex_m_rt as rt;
-extern crate embedded_hal;
-extern crate flash_embedded_hal as fhal;
-extern crate nucleo_l011k4_bsp as bsp;
-extern crate panic_halt;
-extern crate stm32l0x1_hal as hal;
+use panic_halt as _;
 
 use cortex_m::asm;
+use cortex_m_rt::ExceptionFrame;
+use cortex_m_rt::{entry, exception};
 use embedded_hal::digital::StatefulOutputPin;
 use embedded_hal::prelude::*;
-use fhal::flash::{Locking, WriteErase};
-use hal::time::Hertz;
-use rt::ExceptionFrame;
+use flash_embedded_hal::flash::{Locking, WriteErase};
+use nb::block;
+use nucleo_l011k4_bsp as bsp;
+use stm32l0x1_hal as hal;
+use stm32l0x1_hal::time::Hertz;
 
 #[entry]
 fn main() -> ! {
@@ -73,7 +68,7 @@ fn main() -> ! {
         }
         board.flash.lock();
 
-        //block!(vcp_tx.try_write(block!(vcp_rx.try_read()).unwrap())).unwrap();
+        vcp_tx.try_write(vcp_rx.try_read().unwrap()).unwrap();
 
         i += 1;
     }
