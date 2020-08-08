@@ -6,7 +6,7 @@ keywords = ["embedded-hal", "stm32l011k4", "nucleo", "stm32l0x1", "stm32"]
 license = "0BSD"
 name = "nucleo-l011k4-bsp"
 repository = "https://github.com/thenewwazoo/nucleo-l011k4-bsp/"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2018"
 
 [dependencies]
